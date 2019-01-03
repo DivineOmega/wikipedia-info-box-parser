@@ -48,6 +48,14 @@ class WikipediaInfoBoxParser
         $url = $this->buildUrl();
 
         $data = json_decode(file_get_contents($url), true);
-        $content = $data['query']['pages'][24131]['revisions'][0]['slots']['main']['*'];
+        $pages = $data['query']['pages'];
+        $page = reset($pages);
+        $content = $page['revisions'][0]['slots']['main']['*'];
+
+        preg_match_all('/{{Infobox(.*?)\R}}/sm', $content, $matches);
+
+        var_dump($matches[1][0]);
+
+        return null;
     }
 }
