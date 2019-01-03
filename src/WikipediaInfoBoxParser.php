@@ -32,7 +32,7 @@ class WikipediaInfoBoxParser
      * @param mixed $format
      * @return WikipediaInfoBoxParser
      */
-    public function setFormat(string $format) : WikipediaInfoBoxParser
+    public function setFormat(string $format = Format::PLAIN_TEXT) : WikipediaInfoBoxParser
     {
         $this->format = $format;
         return $this;
