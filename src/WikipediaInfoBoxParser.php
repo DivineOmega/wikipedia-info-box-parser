@@ -70,7 +70,7 @@ class WikipediaInfoBoxParser
         return $result;
     }
 
-    public function parseLine(string $line) : ?\stdClass
+    private function parseLine(string $line) : ?\stdClass
     {
         $line = trim($line);
         $line = str_replace('| ', '', $line);
@@ -83,8 +83,31 @@ class WikipediaInfoBoxParser
 
         $result = new \stdClass();
         $result->key = trim($parts[0]);
-        $result->value = trim($parts[1]);
+        $result->value = $this->parseValue($parts[1]);
 
         return $result;
+    }
+
+    private function parseValue(string $value) : string
+    {
+        $value = trim($value);
+        $value = strip_tags($value);
+
+        preg_match_all('/\[\[.*?\]\]/', $value, $matches);
+
+        $matches = $matches[0];
+
+        foreach($matches as $match) {
+            $replace = $match;
+            $replace = str_replace(['[[', ']]'], '', $replace);
+            $pipePos = strpos($replace, '|');
+            if ($pipePos !== false) {
+                $replace = substr($replace, 0, $pipePos);
+            }
+
+            $value = str_replace($match, $replace, $value);
+        }
+
+        return $value;
     }
 }
