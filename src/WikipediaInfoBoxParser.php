@@ -43,7 +43,7 @@ class WikipediaInfoBoxParser
         return $this->endpoint.$this->queryString.$this->article;
     }
 
-    public function parse()
+    public function parse() : array
     {
         $url = $this->buildUrl();
 
@@ -54,8 +54,37 @@ class WikipediaInfoBoxParser
 
         preg_match_all('/{{Infobox(.*?)\R}}/sm', $content, $matches);
 
-        var_dump($matches[1][0]);
+        $match = $matches[1][0];
 
-        return null;
+        $lines = explode("\n", $match);
+
+        $result = [];
+
+        foreach($lines as $line) {
+            $parsedLine = $this->parseLine($line);
+            if ($parsedLine) {
+                $result[$parsedLine->key] = $parsedLine->value;
+            }
+        }
+
+        return $result;
+    }
+
+    public function parseLine(string $line) : ?\stdClass
+    {
+        $line = trim($line);
+        $line = str_replace('| ', '', $line);
+        $line = trim($line);
+        $parts = explode('=', $line, 2);
+
+        if (count($parts)!==2) {
+            return null;
+        }
+
+        $result = new \stdClass();
+        $result->key = trim($parts[0]);
+        $result->value = trim($parts[1]);
+
+        return $result;
     }
 }
