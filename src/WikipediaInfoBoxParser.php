@@ -108,6 +108,12 @@ class WikipediaInfoBoxParser
             $value = str_replace($match, $replace, $value);
         }
 
+        $matched = preg_match('{{start date and age\|(.*?)\|(.*?)\|(.*?)}}', $value, $matches);
+
+        if ($matched) {
+            $value = $matches[1].'-'.$matches[2].'-'.$matches[3];
+        }
+
         return $value;
     }
 }
