@@ -8,7 +8,7 @@ require_once __DIR__.'/../vendor/autoload.php';
 $infobox = (new WikipediaInfoBoxParser())
     ->setArticle('GitHub')
     ->setFormat(Format::PLAIN_TEXT)
-//    ->setFormat(Format::HTML)
+//  ->setFormat(Format::HTML)
     ->parse();
 
 var_dump($infobox);
