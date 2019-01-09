@@ -7,7 +7,7 @@ use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
 class WikipediaInfoBoxParser
 {
     private $article;
-    private $format;
+    private $format = Format::PLAIN_TEXT;
 
     private $endpoint = 'https://en.wikipedia.org/w/api.php';
     private $queryString = '?format=json&action=query&prop=revisions&rvprop=content&rvslots=main&titles=';
@@ -40,7 +40,7 @@ class WikipediaInfoBoxParser
 
     private function buildUrl()
     {
-        return $this->endpoint.$this->queryString.$this->article;
+        return $this->endpoint.$this->queryString.urlencode($this->article);
     }
 
     public function parse() : array
@@ -73,8 +73,6 @@ class WikipediaInfoBoxParser
     private function parseLine(string $line) : ?\stdClass
     {
         $line = trim($line);
-        $line = str_replace('| ', '', $line);
-        $line = trim($line);
         $parts = explode('=', $line, 2);
 
         if (count($parts)!==2) {
@@ -82,38 +80,21 @@ class WikipediaInfoBoxParser
         }
 
         $result = new \stdClass();
-        $result->key = trim($parts[0]);
+        $result->key = trim(str_replace('|', '', $parts[0]));
         $result->value = $this->parseValue($parts[1]);
+
+        if (!$result->key || !$result->value) {
+            return null;
+        }
 
         return $result;
     }
 
     private function parseValue(string $value) : string
     {
-        $value = trim($value);
-        $value = strip_tags($value);
-
-        preg_match_all('/\[\[.*?\]\]/', $value, $matches);
-
-        $matches = $matches[0];
-
-        foreach($matches as $match) {
-            $replace = $match;
-            $replace = str_replace(['[[', ']]'], '', $replace);
-            $pipePos = strpos($replace, '|');
-            if ($pipePos !== false) {
-                $replace = substr($replace, 0, $pipePos);
-            }
-
-            $value = str_replace($match, $replace, $value);
-        }
-
-        $matched = preg_match('{{start date and age\|(.*?)\|(.*?)\|(.*?)}}', $value, $matches);
-
-        if ($matched) {
-            $value = $matches[1].'-'.$matches[2].'-'.$matches[3];
-        }
-
-        return $value;
+        return (new WikitextParser())
+            ->setWikitext($value)
+            ->setFormat($this->format)
+            ->parse();
     }
 }

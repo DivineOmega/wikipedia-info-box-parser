@@ -6,10 +6,9 @@ use DivineOmega\WikipediaInfoBoxParser\WikipediaInfoBoxParser;
 require_once __DIR__.'/../vendor/autoload.php';
 
 $infobox = (new WikipediaInfoBoxParser())
-    ->setArticle('PHP')
+    ->setArticle('GitHub')
     ->setFormat(Format::PLAIN_TEXT)
 //    ->setFormat(Format::HTML)
-//    ->setFormat(Format::Markdown)
     ->parse();
 
 var_dump($infobox);
