@@ -10,7 +10,7 @@ class WikitextParser
     private $wikitext;
     private $format = Format::PLAIN_TEXT;
 
-    private $endpoint = 'https://www.mediawiki.org/w/api.php';
+    private $endpoint = 'https://en.wikipedia.org/w/api.php';
     private $queryString = '?action=parse&format=json&contentmodel=wikitext&text=';
 
     public function setWikitext(string $wikitext) : WikitextParser
