@@ -2,7 +2,9 @@
 
 namespace DivineOmega\WikipediaInfoBoxParser;
 
+use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
+use Psr\Cache\CacheItemPoolInterface;
 
 class WikipediaInfoBoxParser
 {
@@ -11,6 +13,25 @@ class WikipediaInfoBoxParser
 
     private $endpoint = 'https://en.wikipedia.org/w/api.php';
     private $queryString = '?format=json&action=query&prop=revisions&rvprop=content&rvslots=main&titles=';
+
+    /** @var CacheItemPoolInterface */
+    private $cache = null;
+
+    public function __construct()
+    {
+        $cacheItemPool = new CacheItemPool();
+        $cacheItemPool->changeConfig([
+            'cacheDirectory' => __DIR__.'/../cache/',
+        ]);
+
+        $this->setCache($cacheItemPool);
+    }
+
+    public function setCache(CacheItemPoolInterface $cacheItemPool)
+    {
+        $this->cache = $cacheItemPool;
+        return $this;
+    }
 
     /**
      * Sets the Wikipedia article you wish to parse the info box for.
@@ -45,6 +66,14 @@ class WikipediaInfoBoxParser
 
     public function parse() : array
     {
+        $cacheKey = sha1(serialize(['infobox', $this->article, $this->format]));
+
+        $item = $this->cache->getItem($cacheKey);
+
+        if ($item->isHit()) {
+            return $item->get();
+        }
+
         $url = $this->buildUrl();
 
         $data = json_decode(file_get_contents($url), true);
@@ -66,6 +95,9 @@ class WikipediaInfoBoxParser
                 $result[$parsedLine->key] = $parsedLine->value;
             }
         }
+
+        $item->set($result);
+        $this->cache->save($item);
 
         return $result;
     }
@@ -93,6 +125,7 @@ class WikipediaInfoBoxParser
     private function parseValue(string $value) : string
     {
         return (new WikitextParser())
+            ->setCache($this->cache)
             ->setWikitext($value)
             ->setFormat($this->format)
             ->parse();

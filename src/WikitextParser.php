@@ -4,6 +4,7 @@ namespace DivineOmega\WikipediaInfoBoxParser;
 
 
 use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
+use Psr\Cache\CacheItemPoolInterface;
 
 class WikitextParser
 {
@@ -12,6 +13,12 @@ class WikitextParser
 
     private $endpoint = 'https://en.wikipedia.org/w/api.php';
     private $queryString = '?action=parse&format=json&contentmodel=wikitext&text=';
+
+    public function setCache(CacheItemPoolInterface $cacheItemPool)
+    {
+        $this->cache = $cacheItemPool;
+        return $this;
+    }
 
     public function setWikitext(string $wikitext) : WikitextParser
     {
@@ -40,6 +47,14 @@ class WikitextParser
 
     public function parse()
     {
+        $cacheKey = sha1(serialize(['wikitext', $this->wikitext, $this->format]));
+
+        $item = $this->cache->getItem($cacheKey);
+
+        if ($item->isHit()) {
+            return $item->get();
+        }
+
         $url = $this->buildUrl();
 
         $data = json_decode(file_get_contents($url), true);
@@ -56,6 +71,9 @@ class WikitextParser
         }
 
         $returnValue = trim($returnValue);
+
+        $item->set($returnValue);
+        $this->cache->save($item);
 
         return $returnValue;
     }
