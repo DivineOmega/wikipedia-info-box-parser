@@ -4,6 +4,7 @@ namespace DivineOmega\WikipediaInfoBoxParser;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
+use DivineOmega\WikitextParser\Parser;
 use Psr\Cache\CacheItemPoolInterface;
 
 class WikipediaInfoBoxParser
@@ -124,7 +125,7 @@ class WikipediaInfoBoxParser
 
     private function parseValue(string $value) : string
     {
-        return (new WikitextParser())
+        return (new Parser())
             ->setCache($this->cache)
             ->setWikitext($value)
             ->setFormat($this->format)
