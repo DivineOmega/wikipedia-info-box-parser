@@ -4,6 +4,7 @@ namespace DivineOmega\WikipediaInfoBoxParser;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
+use DivineOmega\WikipediaInfoBoxParser\Exceptions\NoInfoBoxFoundException;
 use DivineOmega\WikitextParser\Parser;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -65,6 +66,12 @@ class WikipediaInfoBoxParser
         return $this->endpoint.$this->queryString.urlencode($this->article);
     }
 
+    /**
+     * Retrieves the article, parses the content, and returns an associative array of the info box content.
+     *
+     * @return array
+     * @throws NoInfoBoxFoundException
+     */
     public function parse() : array
     {
         $cacheKey = sha1(serialize(['infobox', $this->article, $this->format]));
@@ -83,6 +90,10 @@ class WikipediaInfoBoxParser
         $content = $page['revisions'][0]['slots']['main']['*'];
 
         preg_match_all('/{{Infobox(.*?)\R}}/sm', $content, $matches);
+
+        if (!isset($matches[1]) || !isset($matches[1][0])) {
+            throw new NoInfoBoxFoundException();
+        }
 
         $match = $matches[1][0];
 
