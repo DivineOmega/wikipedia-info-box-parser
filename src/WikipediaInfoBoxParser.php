@@ -71,6 +71,8 @@ class WikipediaInfoBoxParser
     /**
      * Retrieves the article, parses the content, and returns an associative array of the info box content.
      *
+     * An `_categories` element will contain an array of any categories this article is a part of.
+     *
      * @return array
      * @throws InvalidArgumentException
      * @throws NoInfoBoxFoundException
