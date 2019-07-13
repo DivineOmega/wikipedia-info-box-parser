@@ -4,8 +4,11 @@ namespace DivineOmega\WikipediaInfoBoxParser;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
+use DivineOmega\WikipediaInfoBoxParser\Exceptions\NoInfoBoxFoundException;
 use DivineOmega\WikitextParser\Parser;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
+use stdClass;
 
 class WikipediaInfoBoxParser
 {
@@ -65,6 +68,12 @@ class WikipediaInfoBoxParser
         return $this->endpoint.$this->queryString.urlencode($this->article);
     }
 
+    /**
+     * Retrieves the article, parses the content, and returns an associative array of the info box content.
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
     public function parse() : array
     {
         $cacheKey = sha1(serialize(['infobox', $this->article, $this->format]));
@@ -84,6 +93,10 @@ class WikipediaInfoBoxParser
 
         preg_match_all('/{{Infobox(.*?)\R}}/sm', $content, $matches);
 
+        if (!isset($matches[1]) || !isset($matches[1][0])) {
+            throw new NoInfoBoxFoundException();
+        }
+
         $match = $matches[1][0];
 
         $lines = explode("\n", $match);
@@ -97,13 +110,15 @@ class WikipediaInfoBoxParser
             }
         }
 
+        $result['_categories'] = $this->extractCategories($content);
+
         $item->set($result);
         $this->cache->save($item);
 
         return $result;
     }
 
-    private function parseLine(string $line) : ?\stdClass
+    private function parseLine(string $line) : ?stdClass
     {
         $line = trim($line);
         $parts = explode('=', $line, 2);
@@ -112,7 +127,7 @@ class WikipediaInfoBoxParser
             return null;
         }
 
-        $result = new \stdClass();
+        $result = new stdClass();
         $result->key = trim(str_replace('|', '', $parts[0]));
         $result->value = $this->parseValue($parts[1]);
 
@@ -130,5 +145,27 @@ class WikipediaInfoBoxParser
             ->setWikitext($value)
             ->setFormat($this->format)
             ->parse();
+    }
+
+    public function extractCategories(string $content) : array
+    {
+        $categories = [];
+
+        $lines = explode("\n", $content);
+
+        $categoryStartStr = '[[Category:';
+        $categoryEndStr = ']]';
+
+        foreach ($lines as $line) {
+            if (stripos($line, $categoryStartStr) !== 0) {
+                continue;
+            }
+            $endPosition = stripos($line, $categoryEndStr);
+            $categoryNameLength = $endPosition - strlen($categoryStartStr);
+            $categoryName = substr($line, strlen($categoryStartStr), $categoryNameLength);
+            $categories[] = $categoryName;
+        }
+
+        return $categories;
     }
 }
