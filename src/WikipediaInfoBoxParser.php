@@ -148,7 +148,7 @@ class WikipediaInfoBoxParser
             ->parse();
     }
 
-    public function extractCategories(string $content) : array
+    private function extractCategories(string $content) : array
     {
         $categories = [];
 
