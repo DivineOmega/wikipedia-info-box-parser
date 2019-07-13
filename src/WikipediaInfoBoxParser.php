@@ -73,6 +73,7 @@ class WikipediaInfoBoxParser
      *
      * @return array
      * @throws InvalidArgumentException
+     * @throws NoInfoBoxFoundException
      */
     public function parse() : array
     {
