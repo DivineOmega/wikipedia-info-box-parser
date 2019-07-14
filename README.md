@@ -33,7 +33,7 @@ var_dump($infobox);
 ```
 
 ```php
-array(23) {
+array(24) {
   ["logo"]=>
   string(12) "PHP-logo.svg"
   ["logo size"]=>
@@ -55,11 +55,11 @@ array(23) {
   ["latest release version"]=>
   string(8) "7.3.7[1]"
   ["latest release date"]=>
-  string(39) "July 4, 2019; 9 days ago (2019-07-04)"
+  string(40) "July 4, 2019; 10 days ago (2019-07-04)"
   ["latest preview version"]=>
   string(16) "7.4.0 alpha 3[1]"
   ["latest preview date"]=>
-  string(40) "July 11, 2019; 2 days ago (2019-07-11)"
+  string(40) "July 11, 2019; 3 days ago (2019-07-11)"
   ["typing"]=>
   string(13) "Dynamic, weak"
   ["[[ gradual typingGradual]]<ref>{{cite weburl"]=>
@@ -119,5 +119,46 @@ array(23) {
     [18]=>
     string(13) "1995 software"
   }
+  ["_links"]=>
+  array(500) {
+    [0]=>
+    string(23) ""Hello, World!" program"
+    [1]=>
+    string(6) "32-bit"
+    [2]=>
+    string(6) "64-bit"
+    [3]=>
+    string(26) "APL (programming language)"
+    [4]=>
+    string(7) "ASP.NET"
+    [5]=>
+    string(20) "Abstract Syntax Tree"
+    [6]=>
+    string(15) "Abstract method"
+    [7]=>
+    string(13) "Abstract type"
+    [8]=>
+    string(21) "Academic Free License"
+    [9]=>
+    string(7) "ActiveX"
+    [10]=>
+    string(19) "Active Server Pages"
+    [11]=>
+    string(11) "Adobe Flash"
+    [12]=>
+    string(18) "Ajax (programming)"
+    [13]=>
+    string(21) "Alternative PHP Cache"
+    [14]=>
+    string(35) "Alternative terms for free software"
+    [15]=>
+    string(19) "Amazon Web Services"
+    [16]=>
+    string(12) "Andi Gutmans"
+    [17]=>
+    string(15) "Andrei Zmievski"
+    /* ... */
+  }
 }
+
 ```

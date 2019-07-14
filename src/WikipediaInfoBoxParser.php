@@ -16,7 +16,8 @@ class WikipediaInfoBoxParser
     private $format = Format::PLAIN_TEXT;
 
     private $endpoint = 'https://en.wikipedia.org/w/api.php';
-    private $queryString = '?format=json&action=query&prop=revisions&rvprop=content&rvslots=main&titles=';
+    private $contentQueryString = '?format=json&action=query&prop=revisions&rvprop=content&rvslots=main&titles=';
+    private $linksQueryString = '?action=query&prop=links&pllimit=max&format=json&titles=';
 
     /** @var CacheItemPoolInterface */
     private $cache = null;
@@ -63,15 +64,21 @@ class WikipediaInfoBoxParser
         return $this;
     }
 
-    private function buildUrl()
+    private function buildContentUrl()
     {
-        return $this->endpoint.$this->queryString.urlencode($this->article);
+        return $this->endpoint . $this->contentQueryString . urlencode($this->article);
+    }
+
+    private function buildLinksUrl()
+    {
+        return $this->endpoint.$this->linksQueryString.urlencode($this->article);
     }
 
     /**
      * Retrieves the article, parses the content, and returns an associative array of the info box content.
      *
      * An `_categories` element will contain an array of any categories this article is a part of.
+     * An `_links` element will contain an array of the articles this article links to.
      *
      * @return array
      * @throws InvalidArgumentException
@@ -87,7 +94,7 @@ class WikipediaInfoBoxParser
             return $item->get();
         }
 
-        $url = $this->buildUrl();
+        $url = $this->buildContentUrl();
 
         $data = json_decode(file_get_contents($url), true);
         $pages = $data['query']['pages'];
@@ -114,6 +121,7 @@ class WikipediaInfoBoxParser
         }
 
         $result['_categories'] = $this->extractCategories($content);
+        $result['_links'] = $this->getLinks();
 
         $item->set($result);
         $this->cache->save($item);
@@ -170,5 +178,19 @@ class WikipediaInfoBoxParser
         }
 
         return $categories;
+    }
+
+    private function getLinks() : array
+    {
+        $url = $this->buildLinksUrl();
+
+        $data = json_decode(file_get_contents($url), true);
+        $pages = $data['query']['pages'];
+        $page = reset($pages);
+
+        return array_map(function($link) {
+            return $link['title'];
+        }, $page['links']);
+
     }
 }
