@@ -4,7 +4,6 @@ namespace DivineOmega\WikipediaInfoBoxParser;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\WikipediaInfoBoxParser\Enums\Format;
-use DivineOmega\WikipediaInfoBoxParser\Exceptions\NoInfoBoxFoundException;
 use DivineOmega\WikitextParser\Parser;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -82,7 +81,6 @@ class WikipediaInfoBoxParser
      *
      * @return array
      * @throws InvalidArgumentException
-     * @throws NoInfoBoxFoundException
      */
     public function parse() : array
     {
@@ -103,20 +101,18 @@ class WikipediaInfoBoxParser
 
         preg_match_all('/{{Infobox(.*?)\R}}/sm', $content, $matches);
 
-        if (!isset($matches[1]) || !isset($matches[1][0])) {
-            throw new NoInfoBoxFoundException();
-        }
-
-        $match = $matches[1][0];
-
-        $lines = explode("\n", $match);
-
         $result = [];
 
-        foreach($lines as $line) {
-            $parsedLine = $this->parseLine($line);
-            if ($parsedLine) {
-                $result[$parsedLine->key] = $parsedLine->value;
+        if (isset($matches[1]) && isset($matches[1][0])) {
+            $match = $matches[1][0];
+
+            $lines = explode("\n", $match);
+
+            foreach($lines as $line) {
+                $parsedLine = $this->parseLine($line);
+                if ($parsedLine) {
+                    $result[$parsedLine->key] = $parsedLine->value;
+                }
             }
         }
 
