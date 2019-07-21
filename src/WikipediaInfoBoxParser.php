@@ -184,6 +184,10 @@ class WikipediaInfoBoxParser
         $pages = $data['query']['pages'];
         $page = reset($pages);
 
+        if (!isset($page['links'])) {
+            return [];
+        }
+
         return array_map(function($link) {
             return $link['title'];
         }, $page['links']);
